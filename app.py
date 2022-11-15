@@ -36,33 +36,31 @@ last_time_to_get_token = "2022-11-08 13:40:00"
 def nid_data():
     global access_token
     global refresh_token
-
+    print("Call NID Data")
+    print("request.json")
     print("request.json ", request.json)
 
-    setToken()
     data = request.json
-
     print("<-----------------------------------------------access_token----------------------------------------------->")
-    # print(access_token)
-    # print(is_token_time_expired())
-    # if is_token_time_expired():
-    #     print("<-----------------------------------------------Start Get Token----------------------------------------------->")
-    #     response = get_token()
-    #     print("Response", response)
-    #     if response['status'] == "OK":
-    #         access_token = response["success"]["access_token"]
-    #         refresh_token = response["success"]["refresh_token"]
+    print(access_token)
+    print(is_token_time_expired())
+    if is_token_time_expired():
+        print("<-----------------------------------------------Start Get Token----------------------------------------------->")
+        response = get_token()
+        print("Response", response)
+        if response['status'] == "OK":
+            access_token = response["success"]["access_token"]
+            refresh_token = response["success"]["refresh_token"]
     print("<-----------------------------------------------Start Get NID Info0000----------------------------------------------->")
-    if access_token != "" and not is_token_time_expired():
+    if access_token != "":
         nid_info = get_nid_info(data['nid'], data['dob'])
-        # print("NID INFO", nid_info)
+        print("NID INFO GET")
         # if nid_info !="" and nid_info["status"]=="OK":
         #     photoUrl=  nid_info["success"]["data"]["photo"]
         #     print(photoUrl)
-        #     result = getPhotoBase64(photoUrl)
+        #     # result = getPhotoBase64(photoUrl)
         #     print("Get Phptp")
         return nid_info
-        
     return {"status": "OK"}
 
 
@@ -140,14 +138,11 @@ def get_token():
 
 
 def setToken():
-    print("Token set up")
     if not is_token_time_expired():
-        print("Token Time is Not Expired")
         return
     global last_time_to_get_token
     global access_token
     global refresh_token
-    print("Token Time is Expired")
     last_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print("Call Set Token------------------------------->")
     print("last_time_to_get_token", last_time_to_get_token)
@@ -202,9 +197,10 @@ def get_info():
 
 
 if __name__ == '__main__':
-    # print("From main Access token : --------->", access_token)
+    setToken()
+    print("From main Access token : --------->", access_token)
     # get_token()
     # get_info()
     # print('name',name)
     # is_token_time_expired()
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port=5001)
