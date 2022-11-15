@@ -1,0 +1,106 @@
+Add host file :
+192.168.66.2 prportal.nidw.gov.bd
+
+
+
+project file
+/root/ECNid
+
+Replace myprojec by project Name
+
+Link: https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04#step-5-configuring-nginx-to-proxy-requests
+Link: https://www.codewithharry.com/blogpost/django-deploy-nginx-gunicorn/
+
+sudo apt update
+sudo apt install python3-pip python3-dev build-essential libssl-dev libffi-dev python3-setuptools
+sudo apt install python3-venv
+mkdir ~/myproject
+cd ~/myproject
+python3.6 -m venv myprojectenv
+source myprojectenv/bin/activate
+
+Now test it from env. 
+
+If Pass then follow:
+
+(myprojectenv) $ pip install wheel
+
+(myprojectenv) $ pip install gunicorn flask
+
+
+nano ~/myproject/myproject.py (Copy your app.py file )
+
+sudo ufw allow 5000
+
+Creating the WSGI Entry Point
+
+(myprojectenv) $  nano ~/myproject/wsgi.py
+
+At wsgi.py : 
+
+	from myproject import app
+
+	if __name__ == "__main__":
+		app.run()
+
+Step 4 — Configuring Gunicorn
+
+deactivate
+
+sudo vim /etc/systemd/system/gunicorn.socket (Create gunicorn.socket )
+			[Unit]
+			Description=gunicorn socket
+
+			[Socket]
+			ListenStream=/run/gunicorn.sock
+
+			[Install]
+			WantedBy=sockets.target
+
+sudo vim /etc/systemd/system/gunicorn.service (Create gunicorn.socket )
+
+			[Unit]
+			Description=Gunicorn instance to serve ECNid
+			After=network.target
+
+			[Service]
+			User=root
+			Group=www-data
+			WorkingDirectory=/root/ECNid
+			Environment="PATH=/root/ECNid/ecnidenv/bin"
+			ExecStart=/root/ECNid/ecnidenv/bin/gunicorn --workers 3 --bind unix:/run/gunicorn.sock -m 007 wsgi:app
+
+
+			[Install]
+			WantedBy=multi-user.target
+
+sudo systemctl start gunicorn.socket
+sudo systemctl enable gunicorn.socket
+
+
+
+Configuring Nginx as a reverse proxy
+
+		sudo vim /etc/nginx/sites-available/ecnid
+		(create ecnid file )
+
+		server {
+			listen 80;
+			server_name "";
+			
+			location / {
+				include proxy_params;
+				proxy_pass http://unix:/run/gunicorn.sock;
+			}
+		}
+
+
+sudo ln -s /etc/nginx/sites-available/ecnid /etc/nginx/sites-enabled/
+
+sudo systemctl restart nginx
+
+
+sudo ln -s /etc/nginx/sites-available/ECOcr /etc/nginx/sites-enabled/
+
+
+

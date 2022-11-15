@@ -1,0 +1,14 @@
+[Unit]
+Description=Gunicorn instance to serve ECNid
+After=network.target
+
+[Service]
+User=root
+Group=www-data
+WorkingDirectory=/root/ECNid
+Environment="PATH=/root/ECNid/ecnidenv/bin"
+ExecStart=/root/ECNid/ecnidenv/bin/gunicorn --workers 3 --bind unix:/run/gunicorn.sock -m 007 wsgi:app
+
+
+[Install]
+WantedBy=multi-user.target
